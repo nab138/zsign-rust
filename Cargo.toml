@@ -1,0 +1,16 @@
+[package]
+name = "zsign-rust"
+version = "0.1.0"
+edition = "2021"
+authors = ["nab138 <nab@nabdev.me>"]
+description = "Rust bindings for the zsign library"
+license = "MIT"
+build = "build.rs"
+repository = "https://github.com/nab138/zsign-rust"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.72.0"
+cc = { version = "1.0.83", features = ["parallel"] }
+openssl-sys = { version = "0.9", features = ["vendored"] }
