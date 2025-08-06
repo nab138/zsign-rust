@@ -8,6 +8,7 @@ license = "MIT"
 build = "build.rs"
 repository = "https://github.com/nab138/zsign-rust"
 readme = "README.md"
+keywords = ["zsign", "ios", "codesign"]
 
 [dependencies]
 
