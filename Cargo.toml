@@ -7,6 +7,7 @@ description = "Rust bindings for zsign"
 license = "MIT"
 build = "build.rs"
 repository = "https://github.com/nab138/zsign-rust"
+readme = "README.md"
 
 [dependencies]
 
