@@ -6,6 +6,8 @@ use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::ptr;
 
+use thiserror::Error;
+
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[derive(Debug, Default)]
@@ -35,26 +37,17 @@ pub struct ZSignOptions {
     pub quiet: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Error)]
 pub enum ZSignError {
+    #[error("Invalid input parameters")]
     InvalidInput,
+    #[error("Signing operation failed")]
     SigningFailed,
+    #[error("File is not signed")]
     NotSigned,
+    #[error("Unknown error, code {0}")]
     Unknown(i32),
 }
-
-impl std::fmt::Display for ZSignError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ZSignError::InvalidInput => write!(f, "Invalid input parameters"),
-            ZSignError::SigningFailed => write!(f, "Signing operation failed"),
-            ZSignError::NotSigned => write!(f, "File is not signed"),
-            ZSignError::Unknown(code) => write!(f, "Unknown error code: {}", code),
-        }
-    }
-}
-
-impl std::error::Error for ZSignError {}
 
 impl ZSignOptions {
     pub fn new<S: Into<String>>(input_path: S) -> Self {

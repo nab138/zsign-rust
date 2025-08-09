@@ -1,9 +1,10 @@
 [package]
 name = "zsign-rust"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 authors = ["Nicholas Sharp <nab@nabdev.me>"]
 description = "Rust bindings for zsign"
+documentation = "https://docs.rs/zsign-rust"
 license = "MIT"
 build = "build.rs"
 repository = "https://github.com/nab138/zsign-rust"
@@ -11,6 +12,7 @@ readme = "README.md"
 keywords = ["zsign", "ios", "codesign"]
 
 [dependencies]
+thiserror = "2.0.12"
 
 [build-dependencies]
 bindgen = "0.72.0"
