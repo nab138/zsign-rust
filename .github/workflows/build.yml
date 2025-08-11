@@ -40,5 +40,5 @@ jobs:
         if: matrix.platform == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install frontend dependencies
+      - name: Build
         run: cargo build --features vendored-openssl
