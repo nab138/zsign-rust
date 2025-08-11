@@ -15,11 +15,12 @@ fn main() {
         build.std("c++11");
     }
 
-    if let Ok(inc) = env::var("DEP_OPENSSL_INCLUDE") {
-        for p in inc.split(';') {
-            // split in case Windows gives a ';' list
-            if !p.is_empty() {
-                build.include(p);
+    for var in ["DEP_OPENSSL_SYS_INCLUDE", "DEP_OPENSSL_INCLUDE"] {
+        if let Ok(val) = env::var(var) {
+            for p in val.split(';') {
+                if !p.is_empty() {
+                    build.include(p);
+                }
             }
         }
     }
@@ -40,7 +41,6 @@ fn main() {
         .file("zsign/common/util.cpp");
 
     if cfg!(target_os = "windows") {
-        build.file("zsign/common/common_win32.cpp");
         build.file("zsign/common/iconv.cpp");
         build.file("zsign/common/getopt.cpp");
     }
