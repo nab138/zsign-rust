@@ -2,12 +2,29 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    cc::Build::new()
+    let mut build = cc::Build::new();
+    build
         .cpp(true)
         .warnings(false)
-        .std("c++11")
         .include("zsign")
-        .include("zsign/common")
+        .include("zsign/common");
+
+    if cfg!(target_env = "msvc") {
+        build.flag_if_supported("/std:c++17");
+    } else {
+        build.std("c++11");
+    }
+
+    if let Ok(inc) = env::var("DEP_OPENSSL_INCLUDE") {
+        for p in inc.split(';') {
+            // split in case Windows gives a ';' list
+            if !p.is_empty() {
+                build.include(p);
+            }
+        }
+    }
+
+    build
         .file("zsign/zsign.cpp")
         .file("zsign/bundle.cpp")
         .file("zsign/macho.cpp")
@@ -20,8 +37,14 @@ fn main() {
         .file("zsign/common/log.cpp")
         .file("zsign/common/sha.cpp")
         .file("zsign/common/timer.cpp")
-        .file("zsign/common/util.cpp")
-        .compile("zsign");
+        .file("zsign/common/util.cpp");
+
+    if cfg!(target_os = "windows") {
+        build.file("zsign/common/common_win32.cpp");
+        build.file("zsign/common/iconv.cpp");
+        build.file("zsign/common/getopt.cpp");
+    }
+    build.compile("zsign");
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
