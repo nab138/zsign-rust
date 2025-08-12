@@ -1,20 +1,25 @@
+extern crate cc;
+#[cfg(feature = "vendored-openssl")]
+extern crate openssl_src;
+extern crate pkg_config;
+extern crate vcpkg;
+
+mod find_normal;
+#[cfg(feature = "vendored-openssl")]
+mod find_vendored;
+
 use std::{
     env,
+    ffi::OsString,
     path::{Path, PathBuf},
 };
 
 fn main() {
     println!("cargo:rerun-if-changed=zsign");
 
-    let openssl_dir = env::var_os("OUT_DIR").map(|s| PathBuf::from(s).join("openssl-build"));
-    if openssl_dir.is_none() || !openssl_dir.as_ref().unwrap().exists() {
-        panic!("OpenSSL build directory does not exist");
-    }
+    let target = env::var("TARGET").unwrap();
 
-    let openssl_dir = openssl_dir.unwrap();
-
-    let include_dir = openssl_dir.join("include");
-    let lib_dir = openssl_dir.join("lib");
+    let (lib_dirs, include_dir) = find_openssl(&target);
 
     let mut build = cc::Build::new();
     build
@@ -62,7 +67,13 @@ fn main() {
 
     build.compile("zsign");
 
-    println!("cargo:rustc-link-search=native={}", lib_dir.display());
+    for lib_dir in lib_dirs.iter() {
+        println!(
+            "cargo:rustc-link-search=native={}",
+            lib_dir.to_string_lossy()
+        );
+    }
+    println!("cargo:include={}", include_dir.to_string_lossy());
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
@@ -73,4 +84,34 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .unwrap();
+}
+
+fn find_openssl(target: &str) -> (Vec<PathBuf>, PathBuf) {
+    #[cfg(feature = "vendored-openssl")]
+    {
+        // vendor if the feature is present, unless
+        // OPENSSL_NO_VENDOR exists and isn't `0`
+        if env("OPENSSL_NO_VENDOR").map_or(true, |s| s == "0") {
+            return find_vendored::get_openssl(target);
+        }
+    }
+    find_normal::get_openssl(target)
+}
+
+fn env_inner(name: &str) -> Option<OsString> {
+    let var = env::var_os(name);
+    println!("cargo:rerun-if-env-changed={}", name);
+
+    match var {
+        Some(ref v) => println!("{} = {}", name, v.to_string_lossy()),
+        None => println!("{} unset", name),
+    }
+
+    var
+}
+
+fn env(name: &str) -> Option<OsString> {
+    let prefix = env::var("TARGET").unwrap().to_uppercase().replace('-', "_");
+    let prefixed = format!("{}_{}", prefix, name);
+    env_inner(&prefixed).or_else(|| env_inner(name))
 }

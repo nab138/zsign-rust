@@ -13,3 +13,7 @@ let result = zsign_rust::ZSignOptions::new(path_to_app_folder)
     .with_prov_file(path_to_provisioning_profile)
     .sign();
 ```
+
+### Credits
+
+- A lot of code was borrowed from https://github.com/sfackler/rust-openssl/blob/master/openssl-sys

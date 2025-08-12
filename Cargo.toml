@@ -6,19 +6,20 @@ authors = ["Nicholas Sharp <nab@nabdev.me>"]
 description = "Rust bindings for zsign"
 documentation = "https://docs.rs/zsign-rust"
 license = "MIT"
-build = "build.rs"
+build = "build/main.rs"
 repository = "https://github.com/nab138/zsign-rust"
 readme = "README.md"
 keywords = ["zsign", "ios", "codesign"]
 
 [dependencies]
 thiserror = "2.0.12"
-openssl-sys = { version = "0.9" }
 
 [build-dependencies]
 bindgen = "0.72.0"
 cc = { version = "1.2.31", features = ["parallel"] }
-openssl-sys = { version = "0.9" }
+openssl-src = { version = "300.5.2", optional = true, features = ["legacy"] }
+pkg-config = "0.3.9"
+vcpkg = "0.2.8"
 
 [features]
-vendored-openssl = ["openssl-sys/vendored"]
+vendored-openssl = ["openssl-src"]
