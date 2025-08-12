@@ -6,12 +6,23 @@ use std::{
 fn main() {
     println!("cargo:rerun-if-changed=zsign");
 
+    let openssl_dir = env::var_os("OUT_DIR").map(|s| PathBuf::from(s).join("openssl-build"));
+    if openssl_dir.is_none() || !openssl_dir.as_ref().unwrap().exists() {
+        panic!("OpenSSL build directory does not exist");
+    }
+
+    let openssl_dir = openssl_dir.unwrap();
+
+    let include_dir = openssl_dir.join("include");
+    let lib_dir = openssl_dir.join("lib");
+
     let mut build = cc::Build::new();
     build
         .cpp(true)
         .warnings(false)
         .include("zsign")
-        .include("zsign/common");
+        .include("zsign/common")
+        .include(&include_dir);
 
     if cfg!(target_env = "msvc") {
         build.flag_if_supported("/std:c++14");
@@ -50,6 +61,8 @@ fn main() {
     }
 
     build.compile("zsign");
+
+    println!("cargo:rustc-link-search=native={}", lib_dir.display());
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
