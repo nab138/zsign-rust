@@ -5,65 +5,24 @@ use std::{
 
 fn main() {
     println!("cargo:rerun-if-changed=zsign");
+    let openssl_include = std::env::var("DEP_OPENSSL_INCLUDE").unwrap();
+    let openssl_libs = std::env::var("DEP_OPENSSL_LIBS").unwrap();
 
     let mut build = cc::Build::new();
     build
         .cpp(true)
         .warnings(false)
         .include("zsign")
-        .include("zsign/common");
+        .include("zsign/common")
+        .include(&openssl_include);
 
     if cfg!(target_env = "msvc") {
-        // Avoid std::byte ambiguity with Windows headers
         build.flag_if_supported("/std:c++14");
         build.flag_if_supported("/EHsc");
         build.define("_HAS_STD_BYTE", Some("0"));
         build.define("_CRT_SECURE_NO_WARNINGS", None);
     } else {
         build.std("c++11");
-    }
-
-    // Collect OpenSSL include path
-    let mut added_ssl = false;
-    for var in ["DEP_OPENSSL_SYS_INCLUDE", "DEP_OPENSSL_INCLUDE"] {
-        if let Ok(val) = env::var(var) {
-            for p in val.split(';') {
-                if !p.is_empty() {
-                    build.include(p);
-                    added_ssl = true;
-                }
-            }
-        }
-    }
-
-    // Fallback: search target build dirs if not found
-    if !added_ssl {
-        if let Ok(profile) = env::var("PROFILE") {
-            let target_dir = Path::new("target").join(&profile).join("build");
-            if let Ok(entries) = fs::read_dir(target_dir) {
-                for e in entries.flatten() {
-                    let path = e.path();
-                    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                        if name.starts_with("openssl-sys-") {
-                            let cand = path
-                                .join("out")
-                                .join("openssl-build")
-                                .join("install")
-                                .join("include");
-                            if cand.join("openssl").join("pem.h").is_file() {
-                                build.include(&cand);
-                                added_ssl = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if !added_ssl {
-        println!("cargo:warning=OpenSSL include path not found (no DEP_OPENSSL_SYS_INCLUDE).");
     }
 
     build
@@ -94,6 +53,10 @@ fn main() {
     }
 
     build.compile("zsign");
+
+    println!("cargo:rustc-link-search=native={}", openssl_libs);
+    println!("cargo:rustc-link-lib=ssl");
+    println!("cargo:rustc-link-lib=crypto");
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
