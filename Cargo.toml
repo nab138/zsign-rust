@@ -14,11 +14,11 @@ keywords = ["zsign", "ios", "codesign"]
 [dependencies]
 thiserror = "2.0.12"
 openssl = "0.10"
+openssl-sys = { version = "0.9" }
 
 [build-dependencies]
 bindgen = "0.72.0"
 cc = { version = "1.2.31", features = ["parallel"] }
-openssl-sys = { version = "0.9" }
 
 [features]
 vendored-openssl = ["openssl-sys/vendored"]
