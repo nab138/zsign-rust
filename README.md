@@ -1,5 +1,7 @@
 # zsign-rust
 
+[![Build zsign-rust](https://github.com/nab138/zsign-rust/actions/workflows/build.yml/badge.svg)](https://github.com/nab138/zsign-rust/actions/workflows/build.yml)
+
 Rust bindings for [zsign](https://github.com/zhlynn/zsign)
 
 Note that the ability to zip, unzip, and install has been removed from zsign for simplicity. If you want this functionality you will have to implement it yourself.
