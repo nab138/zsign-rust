@@ -13,6 +13,7 @@ keywords = ["zsign", "ios", "codesign"]
 
 [dependencies]
 thiserror = "2.0.12"
+openssl = "0.10"
 
 [build-dependencies]
 bindgen = "0.72.0"

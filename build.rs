@@ -1,12 +1,16 @@
 use std::{
-    env, fs,
+    env,
     path::{Path, PathBuf},
 };
 
 fn main() {
     println!("cargo:rerun-if-changed=zsign");
-    let openssl_include = std::env::var("DEP_OPENSSL_INCLUDE").unwrap();
-    let openssl_libs = std::env::var("DEP_OPENSSL_LIBS").unwrap();
+    let include_dir = env::var("DEP_OPENSSL_INCLUDE")
+        .expect("DEP_OPENSSL_INCLUDE not set — is openssl-sys in build-dependencies?");
+
+    let lib_dir = env::var("DEP_OPENSSL_LIB").expect("DEP_OPENSSL_LIB not set");
+
+    let libkinds = env::var("DEP_OPENSSL_LIBS").unwrap_or_else(|_| "ssl:crypto".into());
 
     let mut build = cc::Build::new();
     build
@@ -14,7 +18,7 @@ fn main() {
         .warnings(false)
         .include("zsign")
         .include("zsign/common")
-        .include(&openssl_include);
+        .include(&include_dir);
 
     if cfg!(target_env = "msvc") {
         build.flag_if_supported("/std:c++14");
@@ -54,9 +58,10 @@ fn main() {
 
     build.compile("zsign");
 
-    println!("cargo:rustc-link-search=native={}", openssl_libs);
-    println!("cargo:rustc-link-lib=ssl");
-    println!("cargo:rustc-link-lib=crypto");
+    println!("cargo:rustc-link-search=native={}", lib_dir);
+    for lib in libkinds.split(':') {
+        println!("cargo:rustc-link-lib={}", lib);
+    }
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
