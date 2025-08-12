@@ -16,7 +16,11 @@ jobs:
       matrix:
         include:
           - platform: "ubuntu-22.04"
+            build_cmd: "cargo build --features vendored-openssl --release"
+          - platform: "ubuntu-22.04"
+            build_cmd: "cargo build --release"
           - platform: "windows-latest"
+            build_cmd: "cargo build --features vendored-openssl --release"
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -41,4 +45,4 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Build
-        run: cargo build --features vendored-openssl
+        run: ${{ matrix.build_cmd }}
