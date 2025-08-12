@@ -5,20 +5,13 @@ use std::{
 
 fn main() {
     println!("cargo:rerun-if-changed=zsign");
-    let include_dir = env::var("DEP_OPENSSL_INCLUDE")
-        .expect("DEP_OPENSSL_INCLUDE not set — is openssl-sys in build-dependencies?");
-
-    let lib_dir = env::var("DEP_OPENSSL_LIB").expect("DEP_OPENSSL_LIB not set");
-
-    let libkinds = env::var("DEP_OPENSSL_LIBS").unwrap_or_else(|_| "ssl:crypto".into());
 
     let mut build = cc::Build::new();
     build
         .cpp(true)
         .warnings(false)
         .include("zsign")
-        .include("zsign/common")
-        .include(&include_dir);
+        .include("zsign/common");
 
     if cfg!(target_env = "msvc") {
         build.flag_if_supported("/std:c++14");
@@ -57,11 +50,6 @@ fn main() {
     }
 
     build.compile("zsign");
-
-    println!("cargo:rustc-link-search=native={}", lib_dir);
-    for lib in libkinds.split(':') {
-        println!("cargo:rustc-link-lib={}", lib);
-    }
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
