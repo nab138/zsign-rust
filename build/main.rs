@@ -30,6 +30,7 @@ fn main() {
         .include(&include_dir);
 
     if cfg!(target_env = "msvc") {
+        build.define("ZSIGN_RUST_NO_PRAGMA_LINK", None);
         build.flag_if_supported("/std:c++14");
         build.flag_if_supported("/EHsc");
         build.define("_HAS_STD_BYTE", Some("0"));
