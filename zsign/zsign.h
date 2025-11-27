@@ -30,7 +30,8 @@ int sign_ipa(
     const char* temp_folder,
     
     int debug,
-    int quiet
+    int quiet,
+    int enable_cache
 );
 
 const char* get_zsign_version();

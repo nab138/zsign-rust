@@ -51,7 +51,8 @@ extern "C" int sign_ipa(
     const char* temp_folder,
     
     int debug,
-    int quiet
+    int quiet,
+	int enable_cache
 )
 {
 	ZTimer atimer;
@@ -76,6 +77,7 @@ extern "C" int sign_ipa(
 	bool bCheckSignature = (check_signature != 0);
 	bool bDebug = (debug != 0);
 	bool bQuiet = (quiet != 0);
+	bool bEnableCache = (enable_cache != 0);
 
 	if (strInputPath.empty()) {
 		ZLog::Error(">>> Input path is required!\n");
@@ -156,7 +158,7 @@ extern "C" int sign_ipa(
 	atimer.Reset();
 	ZBundle bundle;
 	bool bRet = bundle.SignFolder(&zsa, strPath, strBundleId, strBundleVersion, 
-								  strBundleName, arrDylibFiles, bForce, bWeakInject, true);
+								  strBundleName, arrDylibFiles, bForce, bWeakInject, bEnableCache);
 	atimer.PrintResult(bRet, ">>> Signed %s!", bRet ? "OK" : "Failed");
 
 	gtimer.Print(">>> Done.");

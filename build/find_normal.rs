@@ -230,7 +230,7 @@ fn try_pkg_config_paths() -> Option<(Vec<PathBuf>, PathBuf)> {
     }
 
     // Prefer the first include path.
-    let include_dir = lib.include_paths.get(0)?.to_path_buf();
+    let include_dir = lib.include_paths.first()?.to_path_buf();
 
     // We already emitted link-search above; returning empty lib_dirs is fine.
     Some((vec![], include_dir))
@@ -253,7 +253,7 @@ fn try_vcpkg_paths() -> Option<(Vec<PathBuf>, PathBuf)> {
     println!("cargo:rustc-link-lib=crypt32");
     println!("cargo:rustc-link-lib=advapi32");
 
-    let include_dir = lib.include_paths.get(0)?.to_path_buf();
+    let include_dir = lib.include_paths.first()?.to_path_buf();
     let lib_dirs = lib.link_paths.clone();
 
     Some((lib_dirs, include_dir))
@@ -261,12 +261,12 @@ fn try_vcpkg_paths() -> Option<(Vec<PathBuf>, PathBuf)> {
 
 fn execute_command_and_get_output(cmd: &str, args: &[&str]) -> Option<String> {
     let out = Command::new(cmd).args(args).output();
-    if let Ok(ref r1) = out {
-        if r1.status.success() {
-            let r2 = String::from_utf8(r1.stdout.clone());
-            if let Ok(r3) = r2 {
-                return Some(r3.trim().to_string());
-            }
+    if let Ok(ref r1) = out
+        && r1.status.success()
+    {
+        let r2 = String::from_utf8(r1.stdout.clone());
+        if let Ok(r3) = r2 {
+            return Some(r3.trim().to_string());
         }
     }
 

@@ -35,6 +35,7 @@ pub struct ZSignOptions {
 
     pub debug: bool,
     pub quiet: bool,
+    pub enable_cache: bool,
 }
 
 #[derive(Debug, Clone, Error)]
@@ -53,6 +54,7 @@ impl ZSignOptions {
     pub fn new<S: Into<String>>(input_path: S) -> Self {
         Self {
             input_path: input_path.into(),
+            enable_cache: true,
             ..Default::default()
         }
     }
@@ -129,6 +131,11 @@ impl ZSignOptions {
 
     pub fn with_debug(mut self) -> Self {
         self.debug = true;
+        self
+    }
+
+    pub fn with_disable_cache(mut self) -> Self {
+        self.enable_cache = false;
         self
     }
 
@@ -211,6 +218,7 @@ impl ZSignOptions {
                 temp_folder.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
                 if self.debug { 1 } else { 0 },
                 if self.quiet { 1 } else { 0 },
+                if self.enable_cache { 1 } else { 0 },
             );
 
             match result {
